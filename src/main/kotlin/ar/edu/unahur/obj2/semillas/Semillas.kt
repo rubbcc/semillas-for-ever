@@ -1,37 +1,44 @@
 package ar.edu.unahur.obj2.semillas
 
-class Menta(var altura: Double, val anioSemilla: Int) {
-    fun espacio(): Double {
-        TODO("Te la debo, amigue...")
-    }
+open class Planta(var altura: Double, val anioSemilla: Int) {
 
-    fun daSemillas(): Boolean {
-        TODO("Colgue, che...")
-    }
+    open fun toleranciaAlSol(): Int = 7
 
-    fun esFuerte(): Boolean {
-        TODO("Estas seguro que lo queres implementar así?")
-    }
+    fun esFuerte(): Boolean = toleranciaAlSol() > 9
+
+    fun daSemillas(): Boolean = esFuerte() || hayCondicionParaDarSemilla()
+
+    open fun hayCondicionParaDarSemilla(): Boolean = false
 
 }
 
-class Soja(var altura: Double, val anioSemilla: Int) {
-    fun espacio(): Double {
-        TODO("Lee un poco más el enunciado...")
+class Menta(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) {
+
+    fun espacio(): Double = altura + 1
+
+    override fun hayCondicionParaDarSemilla(): Boolean = altura > 0.4
+}
+
+class Soja(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) {
+    fun espacio(): Double = altura / 2
+
+    override fun hayCondicionParaDarSemilla(): Boolean {
+        return altura > 0.75 && altura < 0.9 && anioSemilla > 2007
     }
 
-    fun daSemillas(): Boolean {
-        TODO("Dalee")
-    }
-
-    fun esFuerte(): Boolean {
-        TODO("Así me implementas mejor")
+    override fun toleranciaAlSol(): Int {
+        return if (altura < 0.5) 6 else if (altura > 1 ) 12 else 8
     }
 }
 
-class Planta(var altura: Double, val anioSemilla: Int) {
-    fun espacio() {
-        TODO("Pasaron cosas")
+class Quinoa(var espacio: Double, anioSemilla: Int): Planta(espacio, anioSemilla) {
+    fun espacio(): Double = espacio
+
+    override fun hayCondicionParaDarSemilla(): Boolean {
+        return anioSemilla in (2001..2008)
     }
 
+    override fun toleranciaAlSol(): Int {
+        return if (espacio < 0.3) 10 else 7
+    }
 }
