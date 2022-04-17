@@ -74,3 +74,27 @@ class SemillasTest : DescribeSpec ({
         }
     }
 })
+
+class Variedades : DescribeSpec ({
+    describe("Creación de sojas transgenicas") {
+        val sojaTransgenicaVieja = SojaTransgenica(0.2,2005)
+        val sojaTransgenicaBaja = SojaTransgenica(0.2,2008)
+        val sojaTransgenicaAlta = SojaTransgenica(0.8,2008)
+        val sojaTransgenicaMuyAlta = SojaTransgenica(1.0,2002)
+        it("La soja transgenica nunca da semillas") {
+            sojaTransgenicaVieja.daSemillas().shouldBeFalse()
+            sojaTransgenicaBaja.daSemillas().shouldBeFalse()
+            sojaTransgenicaAlta.daSemillas().shouldBeFalse()
+            sojaTransgenicaMuyAlta.daSemillas().shouldBeFalse()
+        }
+    }
+    describe("Creación de peperinas") {
+        val menta = Menta(0.3, 2021)
+        val peperina = Peperina(0.3, 2021)
+        it("La peperina ocupa el doble del espacio que la menta") {
+            menta.espacio().shouldBe(1.3)
+            peperina.espacio().shouldBe(2.6)
+        }
+    }
+})
+

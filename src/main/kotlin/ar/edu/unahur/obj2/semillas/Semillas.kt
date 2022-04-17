@@ -6,20 +6,20 @@ open class Planta(var altura: Double, val anioSemilla: Int) {
 
     fun esFuerte(): Boolean = toleranciaAlSol() > 9
 
-    fun daSemillas(): Boolean = esFuerte() || hayCondicionParaDarSemilla()
+    open fun daSemillas(): Boolean = esFuerte() || hayCondicionParaDarSemilla()
 
     open fun hayCondicionParaDarSemilla(): Boolean = false
 
 }
 
-class Menta(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) {
+open class Menta(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) {
 
-    fun espacio(): Double = altura + 1
+    open fun espacio(): Double = altura + 1
 
     override fun hayCondicionParaDarSemilla(): Boolean = altura > 0.4
 }
 
-class Soja(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) {
+open class Soja(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) {
     fun espacio(): Double = altura / 2
 
     override fun hayCondicionParaDarSemilla(): Boolean {
@@ -41,4 +41,12 @@ class Quinoa(var espacio: Double, anioSemilla: Int): Planta(espacio, anioSemilla
     override fun toleranciaAlSol(): Int {
         return if (espacio < 0.3) 10 else 7
     }
+}
+
+class SojaTransgenica(altura: Double, anioSemilla: Int): Soja(altura, anioSemilla) {
+    override fun daSemillas(): Boolean = false
+}
+
+class Peperina(altura: Double, anioSemilla: Int): Menta(altura, anioSemilla) {
+    override fun espacio(): Double = super.espacio() * 2
 }
