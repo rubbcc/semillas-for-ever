@@ -4,7 +4,9 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.startWith
 
 class SemillasTest : DescribeSpec ({
     // hay una clase Planta que tiene por atributos
@@ -82,6 +84,7 @@ class Variedades : DescribeSpec ({
         val sojaTransgenicaBaja = SojaTransgenica(0.2,2008)
         val sojaTransgenicaAlta = SojaTransgenica(0.8,2008)
         val sojaTransgenicaMuyAlta = SojaTransgenica(1.0,2002)
+
         it("La soja transgenica nunca da semillas") {
             sojaTransgenicaVieja.daSemillas().shouldBeFalse()
             sojaTransgenicaBaja.daSemillas().shouldBeFalse()
@@ -92,6 +95,7 @@ class Variedades : DescribeSpec ({
     describe("Creación de peperinas") {
         val menta = Menta(0.3, 2021)
         val peperina = Peperina(0.3, 2021)
+
         it("La peperina ocupa el doble del espacio que la menta") {
             menta.espacio().shouldBe(1.3)
             peperina.espacio().shouldBe(2.6)
@@ -103,15 +107,16 @@ class Variedades : DescribeSpec ({
 class Parcelas : DescribeSpec ({
     describe("Creación de Parcelas") {
         // val parcela = Parcela(ancho, largo, horasSol)
-        val parcela = Parcela(4, 7, 12)
-        val menta = Menta(1.0, 2021)
-        val mentita = Menta(0.3, 2021)
+        val parcela = Parcela(4.0, 7.0, 10)
 
-        val soja = Soja(0.6, 2009)
-        val sojaAlta = Soja(1.2, 2009)
+        val sojaChica = Soja(0.6, 2009)
+        val soja = Soja(0.7, 2002)
+        val sojaMedia = Soja(0.9, 2004)
+        val sojaAlta = Soja(1.2, 20012)
+        val sojaMuyAlta = Soja(1.6, 2010)
 
+        val quinoaChica = Quinoa(0.2, 2018)
         val quinoa = Quinoa(0.5, 2018)
-        val quinoaChica = Quinoa(0.2, 2000)
 
         it("Calculo superficie parcela") {
             parcela.superficie().shouldBe(28)
@@ -120,25 +125,29 @@ class Parcelas : DescribeSpec ({
             parcela.soportaNPlantas().shouldBe(5)
         }
         it("Agrega plantas") {
-            parcela.agregaPlanta(menta)
-            parcela.agregaPlanta(mentita)
-            parcela.agregaPlanta(soja)
-            parcela.agregaPlanta(sojaAlta)
-            parcela.agregaPlanta(quinoa)
+            parcela.plantar(listOf(sojaChica,soja,sojaMedia,sojaAlta))
 
-            parcela.plantas().shouldBe(setOf(menta, mentita, soja, sojaAlta, quinoa))
+            parcela.plantas().shouldBe(setOf(sojaChica,soja,sojaMedia,sojaAlta))
         }
 
-        it("Agrega otra planta sin espacio") {
-            parcela.agregaPlanta(quinoaChica)
-            // shouldBe ERROR
+        it("Agrega otra planta sin espacio o que supere el umbral de horas de sol toleradas") {
+            val muchoSol = shouldThrow<Exception> {
+                quinoa.plantarEn(parcela)
+            }
+            muchoSol.message should startWith("La parcela tiene muchas horas de sol")
+
+            sojaMuyAlta.plantarEn(parcela)
+            val parcelaLlena = shouldThrow<Exception> {
+                quinoaChica.plantarEn(parcela)
+            }
+            parcelaLlena.message should startWith("La parcela esta llena y no se puede plantar más plantas")
         }
     }
 
     describe("Parcelas ideales") {
-        val parcela = Parcela(4, 7, 10)
-        val parcelaChica = Parcela(2, 2, 12)
-        val parcelaMonocultivo = Parcela(1, 1, 16)
+        val parcela = Parcela(4.0, 7.0, 10)
+        val parcelaChica = Parcela(2.0, 2.0, 12)
+        val parcelaMonocultivo = Parcela(1.0, 1.0, 13)
 
         val menta = Menta(1.0, 2021)
 
@@ -148,41 +157,37 @@ class Parcelas : DescribeSpec ({
         val quinoa = Quinoa(0.5, 2018)
         val peperina = Peperina(0.2, 2000)
 
-        parcelaChica.agregarPlanta(soja)
+        soja.plantarEn(parcelaChica)
 
-        it("Planta prefiere esta parcela") {
+        it("La menta y peperina prefieren una superficie mayor a 6 metros cuadrados") {
             menta.parcelaIdeal(parcela).shouldBeTrue()
             menta.parcelaIdeal(parcelaChica).shouldBeFalse()
 
             peperina.parcelaIdeal(parcela).shouldBeTrue()
             peperina.parcelaIdeal(parcelaChica).shouldBeFalse()
-
+        }
+        it("La quinoa prefiere que no haya ninguna planta cuya altura supere los 1.5 metros") {
             quinoa.parcelaIdeal(parcela).shouldBeTrue()
             quinoa.parcelaIdeal(parcelaChica).shouldBeFalse()
             quinoa.parcelaIdeal(parcelaMonocultivo).shouldBeTrue()
-
+        }
+        it("La soja prefiere que las horas de sol sean exactamente igual a los que ella tolera") {
             soja.parcelaIdeal(parcela).shouldBeFalse()
             soja.parcelaIdeal(parcelaChica).shouldBeTrue()
             soja.parcelaIdeal(parcelaMonocultivo).shouldBeFalse()
-
+        }
+        it("La soja transgenica prefiere parcelas que tengan 1 como maxima cantidad de plantas") {
             sojaTransgenica.parcelaIdeal(parcela).shouldBeFalse()
             sojaTransgenica.parcelaIdeal(parcelaChica).shouldBeFalse()
             sojaTransgenica.parcelaIdeal(parcelaMonocultivo).shouldBeTrue()
         }
     }
 
-    La asociación de plantas es una práctica ancestral que busca maximizar los beneficios de las plantas al plantarlas en conjunto con otras que de alguna manera potencian sus beneficios. Para modelar esto, debemos previamente diferenciar las parcelas en dos tipos: las ecológicas y las industriales.
-
-    Para saber si una planta se asocia bien dentro de una parcela, hay que tener en cuenta:
-
-    para las parcelas ecológicas: que la parcela no tenga complicaciones y sea ideal para la planta;
-    para las parcelas industriales: que haya como máximo 2 plantas y que la planta en cuestión sea fuerte.
-
     describe("Asociacion de parcelas") {
-        val parcelaEcologica = ParcelaEcologica(4,8,6)
-        val parcelaEcoVerano = ParcelaEcologica(4,8,12)
-        val parcelaIndustrial = ParcelaEcologica(4,8,14)
-        val parcelaIndustVerano = ParcelaEcologica(4,8,16)
+        val parcelaEcologica = ParcelaEcologica(4.0,8.0,6)
+        val parcelaEcoVerano = ParcelaEcologica(4.0,8.0,12)
+        val parcelaIndustrial = ParcelaEcologica(4.0,8.0,12)
+        val parcelaIndustVerano = ParcelaEcologica(4.0,8.0,13)
 
         val soja = Soja(1.6, 2009)
         val sojaTransgenica = SojaTransgenica(1.2, 2009)
@@ -192,22 +197,51 @@ class Parcelas : DescribeSpec ({
 
         it("Parcela Ecologica") {
             peperina.seAsociaBien(parcelaEcoVerano).shouldBeFalse()
-            parcelaEcoVerano.agregarPlanta(soja)
+            soja.plantarEn(parcelaEcoVerano)
             peperina.seAsociaBien(parcelaEcologica).shouldBeTrue()
             peperina.seAsociaBien(parcelaEcoVerano).shouldBeFalse()
-
         }
 
         it("Parcela Industrial") {
             quinoa.seAsociaBien(parcelaIndustrial).shouldBeFalse()
             soja.seAsociaBien(parcelaIndustrial).shouldBeTrue()
-            parcelaIndustrial.agregarPlanta(peperina)
-            parcelaIndustrial.agregarPlanta(sojaTransgenica)
-            parcelaIndustrial.agregarPlanta(soja)
+            parcelaIndustrial.plantar(listOf(peperina,sojaTransgenica,soja))
             soja.seAsociaBien(parcelaIndustrial).shouldBeFalse()
             soja.seAsociaBien(parcelaIndustVerano).shouldBeFalse()
         }
     }
 
+    describe("INTA") {
+        val menta = Menta(1.0, 2001)
+        val menta2 = Menta(0.5,2001)
+        val soja = Soja(0.6,2009)
+        val soja2 = Soja(0.3,2004)
+        val quinoa = Quinoa(0.5, 2010)
+        val quinoa2 = Quinoa(0.5, 2001)
+        val sojaTransgenica = SojaTransgenica(1.1,2009)
+        val peperina = Peperina(0.8, 2011)
+        val parcela1 = ParcelaEcologica(15.0, 2.0, 7)
+        val parcela2 = ParcelaEcologica(10.0, 1.5, 10)
+        val parcela3 = ParcelaIndustrial(5.0, 5.0, 9)
+        val parcela4 = ParcelaIndustrial(30.0, 1.0, 11)
+
+        parcela1.plantar(listOf(menta,soja,quinoa,quinoa2,menta2))
+        parcela2.plantar(listOf(quinoa,soja2))
+        parcela3.plantar(listOf(sojaTransgenica,soja,quinoa,quinoa2, peperina))
+        parcela4.plantar(listOf(peperina,menta2,quinoa))
+
+        it("Agregando parcelas al INTA"){
+            inta.agregarParcelas(listOf(parcela1,parcela2,parcela3,parcela4))
+            inta.parcelas().shouldBe(setOf(parcela1,parcela2,parcela3,parcela4))
+        }
+
+        it("hay un promedio de 3,75 plantas por parcela") {
+            inta.promedioDePlantas().shouldBe(3.75)
+        }
+
+        it("la parcela mas autosustentable es la parcela1") {
+            inta.parcelaMasAutosustentable().shouldBe(parcela1)
+        }
+    }
 })
 
