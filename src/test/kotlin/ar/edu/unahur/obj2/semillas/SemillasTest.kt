@@ -125,20 +125,21 @@ class Parcelas : DescribeSpec ({
         it("Parcela soporta x cantidad de plantas") {
             parcela.soportaNPlantas().shouldBe(5)
         }
-        it("Agrega plantas") {
-            parcela.plantar(listOf(sojaChica,soja,sojaMedia,sojaAlta))
 
-            parcela.plantas.shouldContainAll(sojaChica,soja,sojaMedia,sojaAlta)
+        it("Se agrega la soja y la parcela tiene complicaciones") {
+            parcela.tieneComplicaciones().shouldBeFalse()
+            soja.plantarEn(parcela)
+            parcela.tieneComplicaciones().shouldBeFalse()
         }
 
-        it("Agrega otra planta supere el umbral de horas de sol toleradas") {
+        it("se agrega una planta supere el umbral de horas de sol toleradas") {
             val muchoSol = shouldThrow<Exception> {
                 quinoa.plantarEn(parcela)
             }
             muchoSol.message should startWith("La parcela tiene muchas horas de sol")
         }
-        it("Agrega otra planta sin espacio") {
-            parcela.plantar(listOf(sojaChica,soja,sojaMedia,sojaAlta,sojaMuyAlta))
+        it("Se agregan plantas y la parcela se queda sin espacio") {
+            parcela.plantar(listOf(sojaChica,sojaMedia,sojaAlta,sojaMuyAlta))
             val parcelaLlena = shouldThrow<Exception> {
                 quinoaChica.plantarEn(parcela)
             }
@@ -148,7 +149,7 @@ class Parcelas : DescribeSpec ({
 
     describe("Parcelas ideales") {
         val parcela = Parcela(4.0, 7.0, 10)
-        val parcelaChica = Parcela(2.0, 2.0, 12)
+        val parcelaChica = Parcela(2.0, 2.5, 12)
         val parcelaMonocultivo = Parcela(5.0, 1.0, 13)
 
         val menta = Menta(1.0, 2021)
@@ -162,43 +163,44 @@ class Parcelas : DescribeSpec ({
         soja.plantarEn(parcelaChica)
 
         it("La menta y peperina prefieren una superficie mayor a 6 metros cuadrados") {
-            menta.parcelaIdeal(parcela).shouldBeTrue()
-            menta.parcelaIdeal(parcelaChica).shouldBeFalse()
+            menta.esParcelaIdeal(parcela).shouldBeTrue()
+            menta.esParcelaIdeal(parcelaChica).shouldBeFalse()
 
-            peperina.parcelaIdeal(parcela).shouldBeTrue()
-            peperina.parcelaIdeal(parcelaChica).shouldBeFalse()
+            peperina.esParcelaIdeal(parcela).shouldBeTrue()
+            peperina.esParcelaIdeal(parcelaChica).shouldBeFalse()
         }
         it("La quinoa prefiere que no haya ninguna planta cuya altura supere los 1.5 metros") {
-            quinoa.parcelaIdeal(parcela).shouldBeTrue()
-            quinoa.parcelaIdeal(parcelaChica).shouldBeFalse()
-            quinoa.parcelaIdeal(parcelaMonocultivo).shouldBeTrue()
+            quinoa.esParcelaIdeal(parcela).shouldBeTrue()
+            quinoa.esParcelaIdeal(parcelaChica).shouldBeFalse()
+            quinoa.esParcelaIdeal(parcelaMonocultivo).shouldBeTrue()
         }
         it("La soja prefiere que las horas de sol sean exactamente igual a los que ella tolera") {
-            soja.parcelaIdeal(parcela).shouldBeFalse()
-            soja.parcelaIdeal(parcelaChica).shouldBeTrue()
-            soja.parcelaIdeal(parcelaMonocultivo).shouldBeFalse()
+            soja.esParcelaIdeal(parcela).shouldBeFalse()
+            soja.esParcelaIdeal(parcelaChica).shouldBeTrue()
+            soja.esParcelaIdeal(parcelaMonocultivo).shouldBeFalse()
         }
         it("La soja transgenica prefiere parcelas que tengan 1 como maxima cantidad de plantas") {
-            sojaTransgenica.parcelaIdeal(parcela).shouldBeFalse()
-            sojaTransgenica.parcelaIdeal(parcelaChica).shouldBeFalse()
-            sojaTransgenica.parcelaIdeal(parcelaMonocultivo).shouldBeTrue()
+            sojaTransgenica.esParcelaIdeal(parcela).shouldBeFalse()
+            sojaTransgenica.esParcelaIdeal(parcelaChica).shouldBeTrue()
+            sojaTransgenica.esParcelaIdeal(parcelaMonocultivo).shouldBeTrue()
         }
     }
 
     describe("Asociacion de parcelas") {
         val parcelaEcologica = ParcelaEcologica(4.0,8.0,6)
-        val parcelaEcoVerano = ParcelaEcologica(4.0,8.0,12)
-        val parcelaIndustrial = ParcelaEcologica(4.0,8.0,12)
-        val parcelaIndustVerano = ParcelaEcologica(4.0,8.0,13)
+        val parcelaEcoVerano = ParcelaEcologica(4.0,8.0,13)
+        val parcelaIndustrial = ParcelaIndustrial(4.0,8.0,12)
 
-        val soja = Soja(1.6, 2009)
+        val soja = Soja(1.2, 2009)
+        val sojaAlta = Soja(1.6, 2009)
         val sojaTransgenica = SojaTransgenica(1.2, 2009)
         val quinoa = Quinoa(0.5, 2018)
         val peperina = Peperina(0.2, 2000)
 
-
         it("Parcela Ecologica") {
-            peperina.seAsociaBien(parcelaEcoVerano).shouldBeFalse()
+            peperina.seAsociaBien(parcelaEcoVerano).shouldBeTrue()
+            soja.seAsociaBien(parcelaEcoVerano).shouldBeFalse()
+            soja.seAsociaBien(parcelaEcologica).shouldBeFalse()
             soja.plantarEn(parcelaEcoVerano)
             peperina.seAsociaBien(parcelaEcologica).shouldBeTrue()
             peperina.seAsociaBien(parcelaEcoVerano).shouldBeFalse()
@@ -207,12 +209,11 @@ class Parcelas : DescribeSpec ({
         it("Parcela Industrial") {
             quinoa.seAsociaBien(parcelaIndustrial).shouldBeFalse()
             soja.seAsociaBien(parcelaIndustrial).shouldBeTrue()
-            parcelaIndustrial.plantar(listOf(peperina,sojaTransgenica,soja))
+            parcelaIndustrial.plantar(listOf(sojaAlta,sojaTransgenica,soja))
             soja.seAsociaBien(parcelaIndustrial).shouldBeFalse()
-            soja.seAsociaBien(parcelaIndustVerano).shouldBeFalse()
         }
     }
-
+/*
     describe("INTA") {
         val menta = Menta(1.0, 2001)
         val menta2 = Menta(0.5,2001)
@@ -244,6 +245,6 @@ class Parcelas : DescribeSpec ({
         it("la parcela mas autosustentable es la parcela1") {
             inta.parcelaMasAutosustentable().shouldBe(parcela1)
         }
-    }
+    }*/
 })
 

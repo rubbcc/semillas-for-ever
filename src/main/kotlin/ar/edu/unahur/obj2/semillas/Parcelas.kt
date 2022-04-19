@@ -1,6 +1,6 @@
 package ar.edu.unahur.obj2.semillas
 
-class Parcela {
+open class Parcela {
 
     val ancho: Double
     val largo: Double
@@ -33,4 +33,16 @@ class Parcela {
     fun soportaNPlantas(): Int = superficie().toInt() / 5
 
     fun cantidadDePlantas(): Int = plantas.count()
+
+    fun tieneComplicaciones() = plantas.any{it.toleranciaAlSol() < horasSol}
+
+    open fun seAsociaBien(planta: Planta): Boolean = false
+}
+
+class ParcelaEcologica(ancho: Double, largo: Double, horasSol: Int): Parcela(ancho, largo, horasSol) {
+    override fun seAsociaBien(planta: Planta): Boolean = !tieneComplicaciones() && planta.esParcelaIdeal(this)
+}
+
+class ParcelaIndustrial(ancho: Double, largo: Double, horasSol: Int): Parcela(ancho, largo, horasSol) {
+    override fun seAsociaBien(planta: Planta): Boolean = cantidadDePlantas() <= 2 && planta.esFuerte()
 }
