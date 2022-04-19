@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.startWith
@@ -107,7 +108,7 @@ class Variedades : DescribeSpec ({
 class Parcelas : DescribeSpec ({
     describe("Creación de Parcelas") {
         // val parcela = Parcela(ancho, largo, horasSol)
-        val parcela = Parcela(4.0, 7.0, 10)
+        val parcela = Parcela(4.0, 7.0, 9)
 
         val sojaChica = Soja(0.6, 2009)
         val soja = Soja(0.7, 2002)
@@ -127,16 +128,17 @@ class Parcelas : DescribeSpec ({
         it("Agrega plantas") {
             parcela.plantar(listOf(sojaChica,soja,sojaMedia,sojaAlta))
 
-            parcela.plantas().shouldBe(setOf(sojaChica,soja,sojaMedia,sojaAlta))
+            parcela.plantas.shouldContainAll(sojaChica,soja,sojaMedia,sojaAlta)
         }
 
-        it("Agrega otra planta sin espacio o que supere el umbral de horas de sol toleradas") {
+        it("Agrega otra planta supere el umbral de horas de sol toleradas") {
             val muchoSol = shouldThrow<Exception> {
                 quinoa.plantarEn(parcela)
             }
             muchoSol.message should startWith("La parcela tiene muchas horas de sol")
-
-            sojaMuyAlta.plantarEn(parcela)
+        }
+        it("Agrega otra planta sin espacio") {
+            parcela.plantar(listOf(sojaChica,soja,sojaMedia,sojaAlta,sojaMuyAlta))
             val parcelaLlena = shouldThrow<Exception> {
                 quinoaChica.plantarEn(parcela)
             }
@@ -147,7 +149,7 @@ class Parcelas : DescribeSpec ({
     describe("Parcelas ideales") {
         val parcela = Parcela(4.0, 7.0, 10)
         val parcelaChica = Parcela(2.0, 2.0, 12)
-        val parcelaMonocultivo = Parcela(1.0, 1.0, 13)
+        val parcelaMonocultivo = Parcela(5.0, 1.0, 13)
 
         val menta = Menta(1.0, 2021)
 
@@ -232,7 +234,7 @@ class Parcelas : DescribeSpec ({
 
         it("Agregando parcelas al INTA"){
             inta.agregarParcelas(listOf(parcela1,parcela2,parcela3,parcela4))
-            inta.parcelas().shouldBe(setOf(parcela1,parcela2,parcela3,parcela4))
+            inta.parcelas.shouldContainAll(parcela1,parcela2,parcela3,parcela4)
         }
 
         it("hay un promedio de 3,75 plantas por parcela") {

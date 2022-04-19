@@ -10,9 +10,13 @@ open class Planta(var altura: Double, val anioSemilla: Int) {
 
     open fun hayCondicionParaDarSemilla(): Boolean = false
 
+    fun plantarEn(parcela: Parcela) {
+        parcela.plantar(listOf(this))
+    }
 }
 
 open class Menta(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) {
+    fun parcelaIdeal(parcela: Parcela) = parcela.superficie() > 6
 
     open fun espacio(): Double = altura + 1
 
@@ -20,6 +24,8 @@ open class Menta(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) 
 }
 
 open class Soja(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) {
+    open fun parcelaIdeal(parcela: Parcela) = parcela.horasSol == toleranciaAlSol()
+
     fun espacio(): Double = altura / 2
 
     override fun hayCondicionParaDarSemilla(): Boolean {
@@ -32,6 +38,8 @@ open class Soja(altura: Double, anioSemilla: Int): Planta(altura, anioSemilla) {
 }
 
 class Quinoa(var espacio: Double, anioSemilla: Int): Planta(espacio, anioSemilla) {
+    fun parcelaIdeal(parcela: Parcela) = parcela.plantas.none{ it.altura > 1.5}
+
     fun espacio(): Double = espacio
 
     override fun hayCondicionParaDarSemilla(): Boolean {
@@ -44,6 +52,8 @@ class Quinoa(var espacio: Double, anioSemilla: Int): Planta(espacio, anioSemilla
 }
 
 class SojaTransgenica(altura: Double, anioSemilla: Int): Soja(altura, anioSemilla) {
+    override fun parcelaIdeal(parcela: Parcela) = parcela.soportaNPlantas() == 1
+
     override fun daSemillas(): Boolean = false
 }
 
